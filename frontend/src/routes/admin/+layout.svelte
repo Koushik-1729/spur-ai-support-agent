@@ -20,8 +20,15 @@
     <aside class="sidebar">
         <div class="logo">Spur Admin</div>
         <nav>
-            <a href="/admin" class:active={$page.url.pathname === '/admin'}>Dashboard</a>
-            <a href="/admin/conversations" class:active={$page.url.pathname.startsWith('/admin/conversations')}>Conversations</a>
+            <a href="/admin" class:active={$page.url.pathname === '/admin'}>
+                <span class="nav-icon">📊</span> Dashboard
+            </a>
+            <a href="/admin/conversations" class:active={$page.url.pathname.startsWith('/admin/conversations')}>
+                <span class="nav-icon">💬</span> Conversations
+            </a>
+            <a href="/admin/analytics" class:active={$page.url.pathname === '/admin/analytics'}>
+                <span class="nav-icon">📈</span> Analytics
+            </a>
         </nav>
         <div class="user-info">
             <span class="email">{$auth.user?.email}</span>

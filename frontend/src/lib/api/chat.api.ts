@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = RAW_API_URL.replace(/\/+$/, ''); // Remove trailing slashes
 
 export interface Message {
     id: string;

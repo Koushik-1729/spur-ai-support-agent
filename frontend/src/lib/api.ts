@@ -2,7 +2,8 @@ import { auth } from './stores/auth.store';
 import { get } from 'svelte/store';
 import { env } from '$env/dynamic/public';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const RAW_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const BASE_URL = RAW_BASE_URL.replace(/\/+$/, ''); // Remove trailing slashes
 
 interface RequestOptions extends RequestInit {
     params?: Record<string, string>;

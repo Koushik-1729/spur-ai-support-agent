@@ -30,6 +30,12 @@
           <span>Secure Payment</span>
         </div>
       </div>
+      <div class="admin-link">
+        <a href="/admin" class="admin-button">
+          <span class="admin-icon">⚙️</span>
+          Admin Portal
+        </a>
+      </div>
     </div>
     <div class="decoration">
       <div class="circle circle-1"></div>
@@ -211,5 +217,35 @@
       flex-direction: column;
       align-items: center;
     }
+  }
+
+  .admin-link {
+    margin-top: 40px;
+  }
+
+  .admin-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: rgba(102, 126, 234, 0.15);
+    border: 1px solid rgba(102, 126, 234, 0.4);
+    border-radius: 12px;
+    color: #a5b4fc;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .admin-button:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: rgba(102, 126, 234, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .admin-icon {
+    font-size: 1.1rem;
   }
 </style>

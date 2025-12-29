@@ -1,7 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 import { writable, get } from 'svelte/store';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = RAW_API_URL.replace(/\/+$/, ''); // Remove trailing slashes
 
 export interface StreamEvents {
     onChunk: (chunk: string) => void;
