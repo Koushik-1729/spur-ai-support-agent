@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import { env, validateEnv } from './config/index.js';
+import { env, validateEnv, logger } from './config/index.js';
 import { runMigrations } from './infrastructure/database/migrate.js';
 import { setupWebSocket } from './infrastructure/websocket/index.js';
 import { OpenAIAdapter, SQLiteAdapter, redisAdapter } from './infrastructure/adapters/index.js';
@@ -47,7 +47,7 @@ app.get('/', (_req: express.Request, res: express.Response) => {
 app.use(errorHandler);
 
 httpServer.listen(env.PORT, () => {
-    console.log(`Server running on http://localhost:${env.PORT}`);
+    logger.info('Server started', { port: env.PORT, url: `http://localhost:${env.PORT}` });
 });
 
 export { app, httpServer, io };

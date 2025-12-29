@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { LLMPort } from '../../domain/ports/llm.port.js';
 import { Message } from '../../domain/entities/message.js';
-import { env, SYSTEM_PROMPT } from '../../config/index.js';
+import { env, SYSTEM_PROMPT, logger } from '../../config/index.js';
 
 export class LLMError extends Error {
     constructor(
@@ -101,7 +101,7 @@ export class OpenAIAdapter implements LLMPort {
 
         if (error instanceof OpenAI.APIError) {
             if (error.status === 401) {
-                console.error('OpenAI API key is invalid');
+                logger.error('OpenAI API key is invalid');
                 return new LLMError(
                     'Our support system is temporarily unavailable. Please try again later.',
                     'auth'
@@ -109,7 +109,7 @@ export class OpenAIAdapter implements LLMPort {
             }
 
             if (error.status === 429) {
-                console.error('OpenAI rate limit exceeded');
+                logger.error('OpenAI rate limit exceeded');
                 return new LLMError(
                     "We're experiencing high demand. Please try again in a moment.",
                     'rate_limit'
@@ -117,7 +117,7 @@ export class OpenAIAdapter implements LLMPort {
             }
 
             if (error.status === 408 || error.code === 'ETIMEDOUT') {
-                console.error('OpenAI request timed out');
+                logger.error('OpenAI request timed out');
                 return new LLMError(
                     "Sorry, I'm taking longer than expected. Please try again.",
                     'timeout'
@@ -127,7 +127,7 @@ export class OpenAIAdapter implements LLMPort {
 
         if (error instanceof Error) {
             if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
-                console.error('Network error connecting to OpenAI:', error.message);
+                logger.error('Network error connecting to OpenAI', { message: error.message });
                 return new LLMError(
                     'Connection error. Please check your internet and try again.',
                     'network'
@@ -135,7 +135,7 @@ export class OpenAIAdapter implements LLMPort {
             }
         }
 
-        console.error('Unknown LLM error:', error);
+        logger.error('Unknown LLM error', { error: String(error) });
         return new LLMError(
             'Something went wrong. Please try again.',
             'unknown'

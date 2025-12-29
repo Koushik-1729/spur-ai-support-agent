@@ -1,0 +1,46 @@
+import { env } from './env.js';
+
+type LogLevel = 'info' | 'warn' | 'error' | 'debug';
+
+interface LogEntry {
+    level: LogLevel;
+    message: string;
+    timestamp: string;
+    data?: Record<string, unknown>;
+}
+
+function formatLog(entry: LogEntry): string {
+    const base = `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}`;
+    if (entry.data) {
+        return `${base} ${JSON.stringify(entry.data)}`;
+    }
+    return base;
+}
+
+function log(level: LogLevel, message: string, data?: Record<string, unknown>) {
+    const entry: LogEntry = {
+        level,
+        message,
+        timestamp: new Date().toISOString(),
+        data,
+    };
+
+    const formatted = formatLog(entry);
+
+    if (level === 'error') {
+        console.error(formatted);
+    } else if (level === 'warn') {
+        console.warn(formatted);
+    } else if (level === 'debug' && env.NODE_ENV === 'development') {
+        console.log(formatted);
+    } else if (level === 'info') {
+        console.log(formatted);
+    }
+}
+
+export const logger = {
+    info: (message: string, data?: Record<string, unknown>) => log('info', message, data),
+    warn: (message: string, data?: Record<string, unknown>) => log('warn', message, data),
+    error: (message: string, data?: Record<string, unknown>) => log('error', message, data),
+    debug: (message: string, data?: Record<string, unknown>) => log('debug', message, data),
+};
