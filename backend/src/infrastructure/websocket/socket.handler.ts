@@ -8,9 +8,16 @@ import { createMessage } from '../../domain/entities/message.js';
 import { redisAdapter } from '../adapters/redis.adapter.js';
 
 export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
+    const corsOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim());
     const io = new SocketIOServer(httpServer, {
         cors: {
-            origin: env.CORS_ORIGIN,
+            origin: (origin, callback) => {
+                if (!origin) return callback(null, true);
+                if (corsOrigins.includes(origin) || corsOrigins.includes('*')) {
+                    return callback(null, true);
+                }
+                callback(new Error('Not allowed by CORS'));
+            },
             methods: ['GET', 'POST'],
             credentials: true,
         },
