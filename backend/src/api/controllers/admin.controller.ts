@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { db, conversations, messages } from '../../infrastructure/database/index.js';
-import { count, desc, eq, sql } from 'drizzle-orm';
+import { count, desc, eq } from 'drizzle-orm';
 import { AuthenticatedRequest, generateToken } from '../middleware/auth.js';
 import { env } from '../../config/index.js';
 
@@ -210,25 +210,22 @@ export class AdminController {
                 .slice(0, 10)
                 .map(([word, count]) => ({ word, count }));
 
-            // Average messages per conversation
-            const avgMessages = await db
+            // Average messages per conversation - simplified query
+            const conversationCounts = await db
                 .select({
-                    avg: sql<number>`AVG(msg_count)`,
+                    conversationId: messages.conversationId,
+                    msgCount: count(),
                 })
-                .from(
-                    db
-                        .select({
-                            conversationId: messages.conversationId,
-                            msg_count: count(),
-                        })
-                        .from(messages)
-                        .groupBy(messages.conversationId)
-                        .as('msg_counts')
-                );
+                .from(messages)
+                .groupBy(messages.conversationId);
+
+            const avgMessagesPerConv = conversationCounts.length > 0
+                ? conversationCounts.reduce((sum, c) => sum + c.msgCount, 0) / conversationCounts.length
+                : 0;
 
             res.json({
                 topKeywords,
-                averageMessagesPerConversation: Math.round(avgMessages[0]?.avg || 0),
+                averageMessagesPerConversation: Math.round(avgMessagesPerConv),
                 totalUserMessages: userMessages.length,
             });
         } catch (error) {
