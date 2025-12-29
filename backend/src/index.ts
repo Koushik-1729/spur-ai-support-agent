@@ -57,7 +57,7 @@ app.use('/chat', chatRateLimiter, createChatRoutes(chatController));
 app.use('/admin', createAdminRoutes(adminController));
 
 // Root health check
-app.get('/', (_req, res) => {
+app.get('/', (_req: express.Request, res: express.Response) => {
     res.json({
         name: 'Spur Chat Backend',
         version: '1.0.0',

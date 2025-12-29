@@ -22,7 +22,7 @@ export function generateToken(payload: JWTPayload): string {
 // Verify JWT token
 export function verifyToken(token: string): JWTPayload | null {
     try {
-        return jwt.verify(token, env.JWT_SECRET) as JWTPayload;
+        return jwt.verify(token, env.JWT_SECRET as string) as JWTPayload;
     } catch {
         return null;
     }

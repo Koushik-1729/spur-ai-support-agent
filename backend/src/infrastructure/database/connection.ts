@@ -3,8 +3,9 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema.js';
 import { existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
+import { env } from '../../config/index.js';
 
-const DB_PATH = process.env.DB_PATH || './data/chat.db';
+const DB_PATH = env.DB_PATH;
 
 // Ensure the data directory exists
 const dbDir = dirname(DB_PATH);
