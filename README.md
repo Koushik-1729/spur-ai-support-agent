@@ -1,119 +1,123 @@
-# Spur Shop AI - Intelligent Customer Support Agent
+# Spur Shop AI
 
-> **Note:** This is a fully functional, production-ready implementation of the Spur AI Assistant.
+A customer support chat agent I built using OpenAI and Socket.io. Streams responses in real-time, keeps track of conversation history, and has an admin panel for viewing logs.
 
-Welcome to **Spur Shop AI**, a modern customer support solution that combines the power of **Large Language Models (OpenAI)** with a **real-time, event-driven architecture**.
+## Running it locally
 
-Many chatbots feel robotic and slow. We built this to feel **alive**. 
-It streams responses character-by-character (like ChatGPT), remembers your entire conversation context, and handles concurrent users gracefully using robust queueing.
+You'll need Node 18+ and Redis running.
 
-![Spur Shop AI Preview](https://via.placeholder.com/800x400?text=Spur+Shop+AI+Chat+Interface)
+### 1. Clone the repo
+```bash
+git clone <your-repo-url>
+cd spur
+```
 
----
+### 2. Start Redis
+```bash
+redis-server
+```
 
-## ✨ Features at a Glance
-
-This isn't just a wrapper around an API. It's a full-stack engineering demonstration.
-
-*   **⚡ Real-Time Streaming**: No staring at a spinner. Responses stream in via WebSockets standard (Socket.io) for instant feedback.
-*   **🧠 Intelligent Context**: The AI remembers previous messages in your session, allowing for natural, follow-up conversations.
-*   **🛠️ Admin Dashboard**: A protected `/admin` route to view live conversation logs and manage settings.
-*   **🛡️ Production-Grade Resilience**:
-    *   **Rate Limiting**: Protects against abuse (built with Redis).
-    *   **Queue Management**: Handles spikes in traffic without crashing.
-    *   **Graceful Fallbacks**: If the WebSocket fails, it degrades intelligently.
-*   **🎨 Premium UI/UX**: Dark mode aesthetic, glassmorphism effects, and smooth micro-animations.
-
----
-
-## 🏗️ Technical Architecture
-
-We chose a "Hexagonal Architecture" (Ports and Adapters) to ensure the code is testable, maintainable, and loosely coupled.
-
-### Backend (`/backend`)
-*   **Runtime**: Node.js & TypeScript
-*   **Framework**: Express.js with Socket.io (for dual REST/WebSocket support)
-*   **Database**: SQLite (via Drizzle ORM) for message storage.
-*   **Cache/Queue**: Redis (for BullMQ queues and Rate Limiting).
-*   **AI Engine**: OpenAI GPT-4o-mini (configured for speed and cost-efficiency).
-
-### Frontend (`/frontend`)
-*   **Framework**: SvelteKit (Vite-powered).
-*   **Styling**: Pure CSS (scoped components) with a modern Design System.
-*   **State**: Svelte Stores for reactive, real-time UI updates.
-
----
-
-## 🚀 Getting Started
-
-You can have this running locally in about 5 minutes.
-
-### Option A: Docker (Recommended)
-The easiest way. Requires Docker & Docker Compose.
-
-1.  **Clone the repo**
-    ```bash
-    git clone <your-repo-url>
-    cd spur
-    ```
-2.  **Add Environment Variables**
-    Create a `.env` file in `backend/` (see `.env.example`). You only really need your OpenAI Key:
-    ```env
-    OPENAI_API_KEY=sk-...
-    ```
-3.  **Run it**
-    ```bash
-    docker-compose up --build
-    ```
-    *   **Frontend**: [http://localhost:3000](http://localhost:3000)
-    *   **Backend**: [http://localhost:3001](http://localhost:3001)
-
-### Option B: Manual Setup (For Development)
-
-**1. Start Redis**
-Ensure you have a Redis instance running locally on port 6379.
-
-**2. Start Backend**
+### 3. Backend
 ```bash
 cd backend
 npm install
-# Update .env with your credentials
+cp .env.example .env
+# Edit .env with your OpenAI key
 npm run dev
 ```
+Runs on http://localhost:3001
 
-**3. Start Frontend**
+### 4. Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Visit [http://localhost:5173](http://localhost:5173) to see it in action.
+Runs on http://localhost:5173
 
 ---
 
-## 📦 Deployment Guide
+## Database
 
-Everything is containerized, making deployment to clouds like **AWS**, **GCP**, or **Railway** a breeze.
+Using SQLite with Drizzle ORM. Migrations run automatically on startup, but you can also run them manually:
 
-### Quick Deploy (Railway/Render)
-Since this repository is a monorepo with Dockerfiles, PaaS providers like Railway are ideal.
-1.  Connect your GitHub Repo.
-2.  Add a **Redis** service.
-3.  Deploy **Backend** (set `REDIS_URL` and `OPENAI_API_KEY`).
-4.  Deploy **Frontend** (set `VITE_API_URL` to your backend's URL).
-
-*(See `deployment_guide.md` for detailed step-by-step instructions.)*
+```bash
+cd backend
+npm run db:migrate    # run migrations
+npm run db:seed       # add some test data
+```
 
 ---
 
-## 🤝 Contributing
+## Env vars
 
-We love contributions! Please start a discussion or open an issue if you want to add:
-*   [ ] OAuth for User Login
-*   [ ] Postgres migration for production
-*   [ ] File uploads for support tickets
+Copy `backend/.env.example` to `backend/.env` and fill in:
+
+**Required:**
+- `OPENAI_API_KEY` — your OpenAI key
+- `JWT_SECRET` — any random string for signing tokens
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD` — credentials for the admin panel
+
+**Optional:**
+- `REDIS_URL` — defaults to localhost
+- `PORT` — defaults to 3001
 
 ---
 
-### License
-MIT © 2024 Spur Shop
+## How it's structured
+
+Tried to keep things organized with a rough hexagonal architecture:
+
+```
+backend/src/
+├── api/          # routes, socket handlers, middleware
+├── core/         # business logic (chat service, etc)
+├── infrastructure/   # DB, Redis, OpenAI wrappers
+└── config/       # env config, FAQ data
+```
+
+The idea is that `core/` doesn't know about Express or Socket.io — it just defines what the app does. The `api/` layer handles HTTP/WebSocket stuff and calls into core. `infrastructure/` handles external services.
+
+I'm using Socket.io for the chat (streams responses as they come in) and Express for the admin REST endpoints.
+
+---
+
+## LLM stuff
+
+**Model:** GPT-4o-mini — fast enough for chat, cheap enough to not worry about costs during development.
+
+**Prompting approach:**
+- There's a system prompt that tells the AI it's a support agent for "Spur Shop"
+- I inject FAQ/policy info from `src/config/faq.ts` so it doesn't make up shipping times or return policies
+- Last N messages from the conversation get included for context
+
+Nothing fancy, but it works well for a support use case.
+
+---
+
+## Trade-offs & what I'd do with more time
+
+Had to cut corners to ship this. Here's what I'd fix:
+
+| Thing | What I did | Reality |
+| :--- | :--- | :--- |
+| DB | SQLite | Works, but not gonna scale horizontally |
+| Auth | Basic JWT | Fine for a demo, wouldn't use in prod |
+| Rate limiting | In-memory | Resets on restart, doesn't work with multiple servers |
+| Logging | console.log | Good luck debugging this in prod |
+
+**If I had more time:**
+
+- **Observability** — I'd add tracing (OpenTelemetry) and ship logs somewhere useful. Right now if the LLM call takes 10 seconds I have no idea why.
+
+- **Tests** — There's basic unit tests but no E2E. Want to add Playwright tests for the actual chat flow.
+
+- **Better RAG** — The FAQ injection is pretty dumb. Would be nice to embed docs in a vector DB and do proper semantic search.
+
+- **Scaling** — Right now it's one server. For multiple instances I'd need sticky sessions for Socket.io and move session state to Redis.
+
+- **DX** — Little stuff like a Makefile, better seed data, maybe auto-generate API types.
+
+---
+
+MIT

@@ -3,16 +3,10 @@ import { LLMPort } from '../../domain/ports/llm.port.js';
 import { Message } from '../../domain/entities/message.js';
 import { env, SYSTEM_PROMPT } from '../../config/index.js';
 
-// Custom error types for better error handling
 export class LLMError extends Error {
     constructor(
         message: string,
-        public readonly type:
-            | 'timeout'
-            | 'rate_limit'
-            | 'auth'
-            | 'network'
-            | 'unknown'
+        public readonly type: 'timeout' | 'rate_limit' | 'auth' | 'network' | 'unknown'
     ) {
         super(message);
         this.name = 'LLMError';
@@ -36,10 +30,7 @@ export class OpenAIAdapter implements LLMPort {
 
     async generateReply(history: Message[], userMessage: string): Promise<string> {
         try {
-            // Limit history to prevent token overflow
             const recentHistory = history.slice(-this.maxHistoryMessages);
-
-            // Build messages array for OpenAI
             const messages: OpenAI.ChatCompletionMessageParam[] = [
                 { role: 'system', content: SYSTEM_PROMPT },
                 ...recentHistory.map((msg) => ({
@@ -68,9 +59,6 @@ export class OpenAIAdapter implements LLMPort {
         }
     }
 
-    /**
-     * Generate a streaming reply - yields chunks as they arrive
-     */
     async *generateStreamingReply(
         history: Message[],
         userMessage: string

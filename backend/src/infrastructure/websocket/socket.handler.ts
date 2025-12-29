@@ -22,7 +22,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
     io.on('connection', (socket: Socket) => {
         console.log(`Client connected: ${socket.id}`);
 
-        // Handle new message with streaming
         socket.on('sendMessage', async (data: { message: string; sessionId?: string }) => {
             const { message, sessionId } = data;
 
@@ -32,7 +31,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
             }
 
             try {
-                // Get or create conversation
                 let conversationId = sessionId;
 
                 if (conversationId) {
@@ -46,7 +44,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
                     conversationId = newConversation.id;
                 }
 
-                // Save user message
                 const userMessage = createMessage(
                     uuidv4(),
                     conversationId,
@@ -56,7 +53,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
                 await dbAdapter.saveMessage(userMessage);
                 await redisAdapter.del(`conversation:${conversationId}:history`);
 
-                // Emit user message acknowledgment
                 socket.emit('messageReceived', {
                     sessionId: conversationId,
                     userMessage: {
@@ -67,7 +63,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
                     },
                 });
 
-                // Get conversation history
                 const cacheKey = `conversation:${conversationId}:history`;
                 let history;
                 const cachedHistory = await redisAdapter.get(cacheKey);
@@ -79,10 +74,8 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
                     await redisAdapter.set(cacheKey, JSON.stringify(history), 60 * 60); // Cache for 1 hour
                 }
 
-                // Start streaming indicator
                 socket.emit('typingStart');
 
-                // Stream AI response
                 let fullResponse = '';
                 const aiMessageId = uuidv4();
 
@@ -98,7 +91,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
                         });
                     }
 
-                    // Save complete AI message
                     const aiMessage = createMessage(
                         aiMessageId,
                         conversationId,
@@ -108,7 +100,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
                     await dbAdapter.saveMessage(aiMessage);
                     await redisAdapter.del(`conversation:${conversationId}:history`);
 
-                    // Emit stream complete
                     socket.emit('streamComplete', {
                         sessionId: conversationId,
                         aiMessage: {
@@ -131,7 +122,6 @@ export function setupWebSocket(httpServer: HTTPServer): SocketIOServer {
             }
         });
 
-        // Handle disconnect
         socket.on('disconnect', () => {
             console.log(`Client disconnected: ${socket.id}`);
         });

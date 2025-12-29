@@ -12,14 +12,12 @@ export interface AuthenticatedRequest extends Request {
     user?: JWTPayload;
 }
 
-// Generate JWT token
 export function generateToken(payload: JWTPayload): string {
     return jwt.sign(payload, env.JWT_SECRET as jwt.Secret, {
         expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
     });
 }
 
-// Verify JWT token
 export function verifyToken(token: string): JWTPayload | null {
     try {
         return jwt.verify(token, env.JWT_SECRET as string) as JWTPayload;
@@ -28,7 +26,6 @@ export function verifyToken(token: string): JWTPayload | null {
     }
 }
 
-// Auth middleware - optional authentication
 export function optionalAuth(
     req: AuthenticatedRequest,
     _res: Response,
@@ -47,7 +44,6 @@ export function optionalAuth(
     next();
 }
 
-// Auth middleware - required authentication
 export function requireAuth(
     req: AuthenticatedRequest,
     res: Response,
@@ -72,7 +68,6 @@ export function requireAuth(
     next();
 }
 
-// Admin-only middleware
 export function requireAdmin(
     req: AuthenticatedRequest,
     res: Response,
