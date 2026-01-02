@@ -70,7 +70,7 @@ npm test
 
 ## How the AI works
 
-Using GPT-4o-mini. System prompt tells it to be a support agent for "Spur Shop". FAQ content from `config/faq.ts` gets injected so it knows shipping policies etc. Conversation history (last N messages) included for context.
+Using GPT-4o-mini. System prompt tells it to be a support agent for "Spur". FAQ content from `config/faq.ts` gets injected so it knows shipping policies etc. Conversation history (last N messages) included for context.
 
 ## What I'd improve
 
