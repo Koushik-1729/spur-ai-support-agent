@@ -85,7 +85,3 @@ Given more time:
 - E2E tests with Playwright
 - Vector DB for better context retrieval
 - Proper horizontal scaling with Redis sessions
-
----
-
-MIT
