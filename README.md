@@ -1,4 +1,4 @@
-# Spur Shop AI
+# Spur AI
 
 Chat support bot. Uses OpenAI for responses, Socket.io for streaming. Has an admin panel too.
 
